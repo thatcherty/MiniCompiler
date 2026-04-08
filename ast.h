@@ -11,27 +11,78 @@ using namespace std;
 // struct because no need for private members
 struct Var
 {	
-	virtual ~Var();
+	virtual ~Var() = default;
+	bool init = false;
+	virtual float getVal() = 0;
+	virtual void setVal(float v) = 0;
 };
 
 struct IntVar : Var
 {
+	int val;
+
+	IntVar(int v, bool i)
+	{
+		val = v;
+		init = i;
+	}
 	
+	float getVal() override
+	{
+		return val;
+	}
+
+	void setVal(float v) override
+	{
+		val = v;
+	}
 };
 
 struct FloatVar : Var
 {
+	float val;
+
+	FloatVar(float v, bool i)
+	{
+		val = v;
+		init = i;
+	}
 	
+	float getVal() override
+	{
+		return val;
+	}
+	
+	void setVal(float v) override
+	{
+		val = v;
+	}
 };
 
 struct CharVar : Var
 {
+	char val;
+
+	CharVar(char v, bool i)
+	{
+		val = v;
+		init = i;
+	}
 	
+	float getVal() override
+	{
+		return val;
+	}
+
+	void setVal(float v) override
+	{
+		val = v;
+	}
 };
 
 struct SymTbl
 {
-	//unordered_map<char*, > st;
+	unordered_map<string, Var*> sym_tbl;
 };
 
 struct Node
@@ -103,6 +154,22 @@ struct DubNode : ExpNode
 	{
 		return value;
 	};
+};
+
+struct IdNode : ExpNode
+{
+	string val;
+
+	IdNode(string id)
+	{
+		val = id;
+	}
+
+	float eval(SymTbl& st) override
+	{
+		return st.sym_tbl[val]->getVal();
+	}
+
 };
 
 struct ParanNode : ExpNode
@@ -582,12 +649,12 @@ struct OutNode : BlockNode
 	};
 };
 
-struct IntNode : BlockNode
+struct DeclIntNode : BlockNode
 {
-	char* id;
+	string id;
 	ExpNode* exp;
 	
-	IntNode(char* i, ExpNode* e)
+	DeclIntNode(string i, ExpNode* e)
 	{
 		id = i;
 		exp = e;
@@ -595,19 +662,48 @@ struct IntNode : BlockNode
 
 	void exe(SymTbl& st) override
 	{
-		cout << "In exe for IntNode" << endl;
 	
-	//	if (st.find(id) != st.end())
-	//	{
-	//		throw runtime_error("Variable already declared."); 
-	//	}
+		if (st.sym_tbl.find(id) != st.sym_tbl.end())
+		{
+			throw runtime_error("Variable already declared."); 
+		}
 
-		//st[id] = exp->eval(st);
+		st.sym_tbl[id] = new IntVar(exp->eval(st), true);
+
 	};
 
-	~IntNode() override
+	~DeclIntNode() override
 	{
-		delete id;
+		delete exp;
+	}
+
+};
+
+
+struct AssignIntNode : BlockNode
+{
+	string id;
+	ExpNode* exp;
+	
+	AssignIntNode(string i, ExpNode* e)
+	{
+		id = i;
+		exp = e;
+	};
+
+	void exe(SymTbl& st) override
+	{
+	
+		if (st.sym_tbl.find(id) == st.sym_tbl.end())
+		{
+			throw runtime_error("Variable not declared."); 
+		}
+
+		st.sym_tbl[id]->setVal(exp->eval(st));
+	};
+
+	~AssignIntNode() override
+	{
 		delete exp;
 	}
 

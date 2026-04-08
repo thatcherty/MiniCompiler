@@ -4,6 +4,7 @@
 
 %{
 #include <iostream>
+#include <string>
 #include "ast.h"
 
 using namespace std;
@@ -24,7 +25,7 @@ SymTbl st {};
 %union {
 	int num;
 	float dub;
-	char* id;
+	char* txt;
 	ExpNode* exp;
 	StmtNode* stmt;
 	BlockNode* block;
@@ -32,7 +33,7 @@ SymTbl st {};
 
 %token <num> NUMBER
 %token <dub> DOUBLE
-%token <id> ID
+%token <txt> ID
 
 %type <exp> exp
 %type <stmt> input
@@ -105,19 +106,19 @@ stmt:
 	;
 
 if_stmt:
-	IF '(' exp ')' '{' stmt '}' ';'
+	IF '(' exp ')' '{' stmt_list '}' ';'
 	{
 		$$ = new IfNode($3, $6);
 	}
 	|
-	IF '(' exp ')' '{' stmt '}' ELSE '{' stmt '}' ';'
+	IF '(' exp ')' '{' stmt_list '}' ELSE '{' stmt_list '}' ';'
 	{
 		$$ = new IfNode($3, $6, $10);
 	}
 	;
 
 while_stmt:
-	WHILE '(' exp ')' '{' stmt '}' ';'
+	WHILE '(' exp ')' '{' stmt_list '}' ';'
 	{
 		$$ = new WhileNode($3, $6);
 	}
@@ -126,14 +127,16 @@ while_stmt:
 decl_stmt:
 	INT ID '=' exp ';'
 	{
-		printf("Found id in decl_stmt: %s\n", $2);
+		std::string temp = $2;
+		$$ = new DeclIntNode(temp, $4);
 	}
 	;
 
 assign_stmt:
 	ID '=' exp ';'
 	{
-		printf("Found id in assign_stmt: %s\n", $1);
+		std::string temp = $1;
+		$$ = new AssignIntNode(temp, $3);
 	}
 	;
 
@@ -231,6 +234,12 @@ exp:
 	DOUBLE
 	{
 		$$ = new DubNode($1);
+	}
+	|
+	ID
+	{
+		std::string temp = $1;
+		$$ = new IdNode(temp);
 	}
 	;
 

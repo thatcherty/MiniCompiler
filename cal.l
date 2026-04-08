@@ -48,7 +48,7 @@ DUB {NUM}(\.{DIG}+)?(E[+-]?{DIG}+)?
 "float" 	{ return FLOAT; }
 "char"		{ return CHAR; }
 
-{ID}        { return ID; }
+{ID}        {  yylval.txt = strdup(yytext); return ID; }
 
 [ \t\n]+ {}
 
