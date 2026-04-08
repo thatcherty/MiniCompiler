@@ -1,3 +1,6 @@
-*.tab*
-./bak
-*.yy
+*.tab.*
+*.yy.*
+lex.yy.c
+cal.tab.c
+cal.tab.h
+bak/
