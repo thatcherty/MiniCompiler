@@ -41,7 +41,7 @@ DUB {NUM}(\.{DIG}+)?(E[+-]?{DIG}+)?
 "sin"		{ return SIN; }
 "cos"		{ return COS; }
 "tan"		{ return TAN; }
-"pi"		{ yylval.num = M_PI; return NUMBER; }
+"pi"		{ yylval.dub = M_PI; return DOUBLE; }
 "print"		{ return PRINT; }
 
 "int" 		{ return INT; }

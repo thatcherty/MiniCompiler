@@ -24,7 +24,7 @@ SymTbl st {};
 
 %union {
 	int num;
-	float dub;
+	double dub;
 	char* txt;
 	ExpNode* exp;
 	StmtNode* stmt;

@@ -13,8 +13,8 @@ struct Var
 {	
 	virtual ~Var() = default;
 	bool init = false;
-	virtual float getVal() = 0;
-	virtual void setVal(float v) = 0;
+	virtual double getVal() = 0;
+	virtual void setVal(double v) = 0;
 };
 
 struct IntVar : Var
@@ -27,33 +27,33 @@ struct IntVar : Var
 		init = i;
 	}
 	
-	float getVal() override
+	double getVal() override
 	{
 		return val;
 	}
 
-	void setVal(float v) override
+	void setVal(double v) override
 	{
 		val = v;
 	}
 };
 
-struct FloatVar : Var
+struct doubleVar : Var
 {
-	float val;
+	double val;
 
-	FloatVar(float v, bool i)
+	doubleVar(double v, bool i)
 	{
 		val = v;
 		init = i;
 	}
 	
-	float getVal() override
+	double getVal() override
 	{
 		return val;
 	}
 	
-	void setVal(float v) override
+	void setVal(double v) override
 	{
 		val = v;
 	}
@@ -69,12 +69,12 @@ struct CharVar : Var
 		init = i;
 	}
 	
-	float getVal() override
+	double getVal() override
 	{
 		return val;
 	}
 
-	void setVal(float v) override
+	void setVal(double v) override
 	{
 		val = v;
 	}
@@ -92,7 +92,7 @@ struct Node
 
 struct ExpNode : Node
 {
-	virtual float eval(SymTbl& st) = 0;
+	virtual double eval(SymTbl& st) = 0;
 };
 
 struct StmtNode : Node
@@ -135,7 +135,7 @@ struct NumNode : ExpNode
 		value = n;
 	};
 
-	float eval(SymTbl& st) override 
+	double eval(SymTbl& st) override 
 	{
 		return value;
 	};
@@ -143,14 +143,14 @@ struct NumNode : ExpNode
 
 struct DubNode : ExpNode 
 {
-	float value;
+	double value;
 
-	DubNode(float n)
+	DubNode(double n)
 	{
 		value = n;
 	};
 
-	float eval(SymTbl& st) override 
+	double eval(SymTbl& st) override 
 	{
 		return value;
 	};
@@ -165,7 +165,7 @@ struct IdNode : ExpNode
 		val = id;
 	}
 
-	float eval(SymTbl& st) override
+	double eval(SymTbl& st) override
 	{
 		return st.sym_tbl[val]->getVal();
 	}
@@ -181,7 +181,7 @@ struct ParanNode : ExpNode
 		node = n;
 	};
 
-	float eval(SymTbl& st) override
+	double eval(SymTbl& st) override
 	{
 		return node->eval(st);
 	}
@@ -203,7 +203,7 @@ struct AddNode : ExpNode
 		right = r;
 	};
 
-	float eval(SymTbl& st) override
+	double eval(SymTbl& st) override
 	{
 		return left->eval(st) + right->eval(st);
 	};
@@ -227,7 +227,7 @@ struct SubNode : ExpNode
 		right = r;
 	};
 
-	float eval(SymTbl& st) override
+	double eval(SymTbl& st) override
 	{
 		return left->eval(st) - right->eval(st);
 	};
@@ -251,7 +251,7 @@ struct MultNode : ExpNode
 		right = r;
 	};
 
-	float eval(SymTbl& st) override
+	double eval(SymTbl& st) override
 	{
 		return left->eval(st) * right->eval(st);
 	};
@@ -275,9 +275,9 @@ struct DivNode : ExpNode
 		right = r;
 	};
 
-	float eval(SymTbl& st) override
+	double eval(SymTbl& st) override
 	{
-		float r = right->eval(st);
+		double r = right->eval(st);
 		if (r == 0)
 		{
 		    throw runtime_error("Divide by zero");
@@ -302,7 +302,7 @@ struct SinNode : ExpNode
 		node = n;
 	};
 
-	float eval(SymTbl& st) override
+	double eval(SymTbl& st) override
 	{
 		return sin(node->eval(st));
 	};
@@ -323,7 +323,7 @@ struct TanNode : ExpNode
 		node = n;
 	};
 
-	float eval(SymTbl& st) override
+	double eval(SymTbl& st) override
 	{
 		return tan(node->eval(st));
 	};
@@ -344,7 +344,7 @@ struct CosNode : ExpNode
 		node = n;
 	};
 
-	float eval(SymTbl& st) override
+	double eval(SymTbl& st) override
 	{
 		return cos(node->eval(st));
 	};
@@ -365,7 +365,7 @@ struct NegNode : ExpNode
 		node = n;
 	};
 
-	float eval(SymTbl& st) override
+	double eval(SymTbl& st) override
 	{
 		return -1 * node->eval(st);
 	};
@@ -385,7 +385,7 @@ struct NotNode : ExpNode
 		node = n;
 	};
 
-	float eval(SymTbl& st) override
+	double eval(SymTbl& st) override
 	{
 		return !( node->eval(st));
 	};
@@ -407,7 +407,7 @@ struct ExponNode : ExpNode
 		right = r;
 	};
 
-	float eval(SymTbl& st) override
+	double eval(SymTbl& st) override
 	{
 		return pow(left->eval(st), right->eval(st));
 	};
@@ -430,7 +430,7 @@ struct GreaterNode : ExpNode
 		right = r;
 	};
 
-	float eval(SymTbl& st) override
+	double eval(SymTbl& st) override
 	{
 		return left->eval(st) > right->eval(st);
 	};
@@ -453,7 +453,7 @@ struct LesserNode : ExpNode
 		right = r;
 	};
 
-	float eval(SymTbl& st) override
+	double eval(SymTbl& st) override
 	{
 		return left->eval(st) < right->eval(st);
 	};
@@ -476,7 +476,7 @@ struct GreaterEqNode : ExpNode
 		right = r;
 	};
 
-	float eval(SymTbl& st) override
+	double eval(SymTbl& st) override
 	{
 		return left->eval(st) >= right->eval(st);
 	};
@@ -499,7 +499,7 @@ struct LesserEqNode : ExpNode
 		right = r;
 	};
 
-	float eval(SymTbl& st) override
+	double eval(SymTbl& st) override
 	{
 		return left->eval(st) <= right->eval(st);
 	};
@@ -522,7 +522,7 @@ struct EqualNode : ExpNode
 		right = r;
 	};
 
-	float eval(SymTbl& st) override
+	double eval(SymTbl& st) override
 	{
 		return left->eval(st) == right->eval(st);
 	};
@@ -545,7 +545,7 @@ struct NotEqualNode : ExpNode
 		right = r;
 	};
 
-	float eval(SymTbl& st) override
+	double eval(SymTbl& st) override
 	{
 		return left->eval(st) != right->eval(st);
 	};
@@ -640,7 +640,16 @@ struct OutNode : BlockNode
 
 	void exe(SymTbl& st) override
 	{
-		cout << exp->eval(st) << endl;
+		double res = exp->eval(st);
+
+		if (fabs(res) < 1e-12)
+		{
+			cout << 0.0 << endl;
+		}
+		else
+		{
+			cout << res << endl;
+		}
 	};
 
 	~OutNode() override
