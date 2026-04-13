@@ -3,13 +3,13 @@
 }
 
 %{
-#include <iostream>
 #include <string>
+#include <iostream>
+#include <cstdio>
 #include "ast.h"
 
-using namespace std;
-
 int yylex();
+extern FILE* yyin;
 
 void yyerror(const char* s)
 {
@@ -37,17 +37,23 @@ SymTbl st {};
 
 %type <exp> exp
 %type <stmt> input
-%type <block> stmt_list stmt if_stmt while_stmt decl_stmt assign_stmt
+%type <block> stmt_list stmt if_stmt while_stmt decl_stmt assign_stmt print_stmt
 
-%token LE GE EQ NE IF WHILE SIN COS TAN PRINT ELSE INT FLOAT CHAR
+%token LE GE EQ NE IF WHILE SIN COS TAN PRINT ELSE INT FLOAT OR AND
 %token '(' ')' '!' '%' '=' '{' '}' ',' '>' '<' '^'
 
-%left '>' '<' LE GE EQ NE '!'
+%left OR
+%left AND
+%left EQ NE
+%left '>' '<' LE GE 
 %left '+' '-'
-%left '*' '/'
-%left '^'
-%left PARAN
+%left '*' '/' '%'
+%right '^'
 %right UMINUS
+%right NOT
+%left '!'
+%left PARAN
+
 
 %start input
 
@@ -99,9 +105,10 @@ stmt:
 		$$->add($1);
 	}
 	|
-	PRINT '(' exp ')' ';'
+	print_stmt
 	{
-		$$ = new OutNode($3);
+		$$ = new BlockNode();
+		$$->add($1);
 	}
 	;
 
@@ -130,13 +137,26 @@ decl_stmt:
 		std::string temp = $2;
 		$$ = new DeclIntNode(temp, $4);
 	}
+	|
+	FLOAT ID '=' exp ';'
+	{
+		std::string temp = $2;
+		$$ = new DeclDubNode(temp, $4);
+	}
 	;
 
 assign_stmt:
 	ID '=' exp ';'
 	{
 		std::string temp = $1;
-		$$ = new AssignIntNode(temp, $3);
+		$$ = new AssignNode(temp, $3);
+	}
+	;
+
+print_stmt:
+	PRINT '(' exp ')' ';'
+	{
+		$$ = new OutNode($3);
 	}
 	;
 
@@ -186,16 +206,6 @@ exp:
 		$$ = new NegNode($2);
 	}
 	|
-	exp '>' exp
-	{
-		$$ = new GreaterNode($1, $3);
-	}
-	|
-	exp '<' exp
-	{
-		$$ = new LesserNode($1, $3);
-	}
-	|
 	exp GE exp
 	{
 		$$ = new GreaterEqNode($1, $3);
@@ -204,6 +214,16 @@ exp:
 	exp LE exp
 	{
 		$$ = new LesserEqNode($1, $3);
+	}
+	|
+	exp '>' exp
+	{
+		$$ = new GreaterNode($1, $3);
+	}
+	|
+	exp '<' exp
+	{
+		$$ = new LesserNode($1, $3);
 	}
 	|
 	exp EQ exp
@@ -216,14 +236,34 @@ exp:
 		$$ = new NotEqualNode($1, $3);
 	}
 	|
-	'!' exp
+	'!' exp %prec NOT
 	{
 		$$ = new NotNode($2);
+	}
+	|
+	exp '!'
+	{
+		$$ = new FactNode($1);
 	}
 	|
 	exp '^' exp
 	{
 		$$ = new ExponNode($1, $3);
+	}
+	|
+	exp OR exp
+	{
+		$$ = new OrNode($1, $3);
+	}
+	|
+	exp AND exp
+	{
+		$$ = new AndNode($1, $3);
+	}
+	|
+	exp '%' exp
+	{
+		$$ = new ModNode($1, $3);
 	}
 	|
 	NUMBER
@@ -245,13 +285,29 @@ exp:
 
 %%
 
-int main()
+int main(int argc, char* argv[])
 {
+	if (argc > 1)
+	{
+		yyin = fopen(argv[1], "r");
+		if (!yyin)
+		{
+			perror("Failed to open input file");
+			return 1;
+		}
+	}
+	
 	if (yyparse() == 0 && root != nullptr)
 	{
 		root->exe(st);
 		delete root;
 	}
+
+	if (argc > 1 && yyin)
+	{
+		fclose(yyin);
+	}
+	
 	return 0;
 	
 }

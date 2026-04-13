@@ -38,11 +38,11 @@ struct IntVar : Var
 	}
 };
 
-struct doubleVar : Var
+struct DubVar : Var
 {
 	double val;
 
-	doubleVar(double v, bool i)
+	DubVar(double v, bool i)
 	{
 		val = v;
 		init = i;
@@ -53,27 +53,6 @@ struct doubleVar : Var
 		return val;
 	}
 	
-	void setVal(double v) override
-	{
-		val = v;
-	}
-};
-
-struct CharVar : Var
-{
-	char val;
-
-	CharVar(char v, bool i)
-	{
-		val = v;
-		init = i;
-	}
-	
-	double getVal() override
-	{
-		return val;
-	}
-
 	void setVal(double v) override
 	{
 		val = v;
@@ -557,6 +536,110 @@ struct NotEqualNode : ExpNode
 	};
 };
 
+struct OrNode : ExpNode
+{
+	ExpNode* left;
+	ExpNode* right;
+
+	OrNode(ExpNode* l, ExpNode* r)
+	{
+		left = l;
+		right = r;
+	};
+
+	double eval(SymTbl& st) override
+	{
+		return left->eval(st) || right->eval(st);
+	};
+
+	~OrNode() override
+	{
+		delete left;
+		delete right;
+	};
+};
+
+struct AndNode : ExpNode
+{
+	ExpNode* left;
+	ExpNode* right;
+
+	AndNode(ExpNode* l, ExpNode* r)
+	{
+		left = l;
+		right = r;
+	};
+
+	double eval(SymTbl& st) override
+	{
+		return left->eval(st) && right->eval(st);
+	};
+
+	~AndNode() override
+	{
+		delete left;
+		delete right;
+	};
+};
+
+struct ModNode : ExpNode
+{
+	ExpNode* left;
+	ExpNode* right;
+
+	ModNode(ExpNode* l, ExpNode* r)
+	{
+		left = l;
+		right = r;
+	};
+
+	double eval(SymTbl& st) override
+	{
+		double l = left->eval(st);
+        double r = right->eval(st);
+
+        if (r == 0)
+        {
+            throw runtime_error("Modulo by zero");
+        }
+
+        return fmod(l, r);	
+     };
+
+	~ModNode() override
+	{
+		delete left;
+		delete right;
+	};
+};
+
+struct FactNode : ExpNode
+{
+	ExpNode* left;
+
+	FactNode(ExpNode* l)
+	{
+		left = l;
+	};
+
+	double eval(SymTbl& st) override
+	{
+		double l = left->eval(st);
+
+        if (l < 0)
+        {
+            throw runtime_error("Factorial undefined for negative values");
+        }
+		
+        return tgamma(l + 1);	
+     };
+
+	~FactNode() override
+	{
+		delete left;
+	};
+};
+
 struct IfNode : BlockNode
 {
 	ExpNode* cond;
@@ -688,13 +771,43 @@ struct DeclIntNode : BlockNode
 
 };
 
-
-struct AssignIntNode : BlockNode
+struct DeclDubNode : BlockNode
 {
 	string id;
 	ExpNode* exp;
 	
-	AssignIntNode(string i, ExpNode* e)
+	DeclDubNode(string i, ExpNode* e)
+	{
+		id = i;
+		exp = e;
+	};
+
+	void exe(SymTbl& st) override
+	{
+	
+		if (st.sym_tbl.find(id) != st.sym_tbl.end())
+		{
+			throw runtime_error("Variable already declared."); 
+		}
+
+		st.sym_tbl[id] = new DubVar(exp->eval(st), true);
+	};
+
+	~DeclDubNode() override
+	{
+		delete exp;
+	}
+
+};
+
+
+
+struct AssignNode : BlockNode
+{
+	string id;
+	ExpNode* exp;
+	
+	AssignNode(string i, ExpNode* e)
 	{
 		id = i;
 		exp = e;
@@ -711,7 +824,7 @@ struct AssignIntNode : BlockNode
 		st.sym_tbl[id]->setVal(exp->eval(st));
 	};
 
-	~AssignIntNode() override
+	~AssignNode() override
 	{
 		delete exp;
 	}

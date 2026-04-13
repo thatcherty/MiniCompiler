@@ -4,6 +4,8 @@ ID ({CHAR}|_)({CHAR}|{DIG}|_)*
 NUM {DIG}+
 DUB {NUM}(\.{DIG}+)?(E[+-]?{DIG}+)?
 
+%option noyywrap
+
 %{
 #include <stdlib.h> /* for atoi call */
 #include "cal.tab.h"
@@ -29,6 +31,8 @@ DUB {NUM}(\.{DIG}+)?(E[+-]?{DIG}+)?
 ">=" { return GE;}
 "==" { return EQ;}
 "!=" { return NE;}
+"||" { return OR;}
+"&&" { return AND;}
 
 
 [!()%*/+-={},><^;] { return *yytext;}
@@ -45,8 +49,7 @@ DUB {NUM}(\.{DIG}+)?(E[+-]?{DIG}+)?
 "print"		{ return PRINT; }
 
 "int" 		{ return INT; }
-"float" 	{ return FLOAT; }
-"char"		{ return CHAR; }
+"double" 	{ return FLOAT; }
 
 {ID}        {  yylval.txt = strdup(yytext); return ID; }
 
@@ -54,7 +57,3 @@ DUB {NUM}(\.{DIG}+)?(E[+-]?{DIG}+)?
 
 %%
 
-int yywrap()
-{ 
- return 1;
-} 

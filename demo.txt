@@ -1,0 +1,11 @@
+int x = 5;
+print(x);
+if (x > 3) {
+    print(x + 2);
+};
+while (x < 8) {
+    print(x);
+    x = x + 1;
+};
+print(sin(pi));
+print(tan(pi));
